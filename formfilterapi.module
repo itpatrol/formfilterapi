@@ -1,0 +1,219 @@
+<?php
+// $Id$
+/********************************************************************
+ * Constants
+ ********************************************************************/
+
+/********************************************************************
+ * Drupal Hooks
+ ********************************************************************/
+
+
+/**
+ * Implementation of hook_theme()
+ */
+function formfilterapi_theme() {
+  return array(
+    'formfilterapi_formfilter' => array(
+      'arguments' => array('form' => NULL),
+    ),
+  );
+};
+
+
+/********************************************************************
+ * API Functions
+ ********************************************************************/
+function formfilterapi_getForm($session_name){
+  return drupal_get_form('formfilterapi_form',$session_name);
+}
+ 
+function formfilterapi_build_filter_query($sess) {
+
+  $filters=array();
+  foreach (module_implements('formfilterapi') as $module) {
+    if ($module_filters= module_invoke($module, 'formfilterapi','filters',$sess)) {
+      $filters +=$module_filters;
+    }
+  }
+  // Build query
+  $where = $args = $join = array();
+   
+  if(isset($_SESSION[$sess])){
+    $SESSVALS=$_SESSION[$sess];
+    unset($SESSVALS['queue']);
+    foreach (module_implements('formfilterapi') as $module) {
+      $function = $module .'_formfilterapi';
+      $function('pre_query',$sess,$SESSVALS);
+    } 
+    foreach ($SESSVALS as $key => $value) {
+      if(is_array($value)){
+        $where[] = $filters[$key]['#where'];
+        $join[] = $filters[$key]['#join'];
+
+        foreach($value as $k2 => $v2){
+          $args[] = $v2;
+        }
+
+      }elseif($value != '_default' ){
+        $where[] = $filters[$key]['#where'];
+        $args[] = $value;
+        $join[] = $filters[$key]['#join'];
+      }
+    }
+  }
+  $where = count($where) ? 'WHERE '. implode(' AND ', $where) : '';
+  $join = count($join) ? ' '. implode(' ', array_unique($join)) : '';
+
+  $result = array(
+    'where' => $where,
+    'join' => $join,
+    'args' => $args,
+  );
+  return $result;
+}
+ 
+function formfilterapi_form($form_state,$sess){
+  drupal_add_css(drupal_get_path('module', 'formfilterapi') .'/formfilterapi.css');
+  
+  $session = $_SESSION[$sess];
+  unset($session['queue']);
+  $session = is_array($session) ? $session : array();
+//  $filtersfunction=$sess;
+//  $filters = $filtersfunction();
+  $filters=array();
+  foreach (module_implements('formfilterapi') as $module) {
+    if ($module_filters= module_invoke($module, 'formfilterapi','filters',$sess)) {
+      $filters +=$module_filters;
+    }
+  }
+  
+  $options=array();
+  
+  $form['session_name']= array ('#type' => 'hidden', '#value' => $sess);
+  $form['filters'] = array('#theme' => 'formfilterapi_formfilter');
+  
+  foreach($filters as $type => $filter){
+    $filters[$type]['#prefix'] = '<div class="inactive">';
+    $filters[$type]['#suffix'] = '</div>';  
+  }
+  foreach ($session as $type => $value) {
+
+    if($value != '_default'){
+      $filters[$type]['#prefix'] = '<div class="active">';
+      $filters[$type]['#suffix'] = '</div>';
+    }
+    
+    $filters[$type]['#default_value'] = $value;
+  }
+  $form['filters']['status']=array('#tree' => true);
+
+  foreach ($filters as $key => $filter) {
+    unset($filter['#where']);
+    if($filter['#type'] == 'select'){
+      $filter['#options']['_default']=t('Please select');
+      if(!isset($filter['#default_value'])){
+        $filter['#default_value']='_default';
+      }
+    }
+    $form['filters']['status'][$key] = $filter;
+  }
+  
+  $form['filters']['buttons']['#prefix'] = '<div class="buttons">';
+  $form['filters']['buttons']['#suffix'] = '</div>';
+    
+  if (count($session)) {
+
+    $form['filters']['buttons']['reset'] = array(
+      '#type' => 'submit',
+      '#value' => t('Reset'),
+      '#submit' => array('formfilterapi_form_submit'),
+    );
+    
+    $form['filters']['buttons']['undo'] = array(
+      '#type' => 'submit',
+      '#value' => t('Undo'),
+      '#submit' => array('formfilterapi_form_submit'),                                            
+    );
+    
+  }
+
+  $form['filters']['buttons']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => (count($session) ? t('Refine') : t('Filter')),
+    '#submit' => array('formfilterapi_form_submit'),
+  );
+  
+  $form['#attributes']=array('class' => 'formfilterapiform '.$sess);
+  
+
+  return $form;
+}
+
+
+function formfilterapi_form_submit($form, &$form_state) {
+  $op = $form_state['values']['op'];
+  $sess=$form_state['values']['session_name'];
+  
+  $filters=array();
+  foreach (module_implements('formfilterapi') as $module) {
+    if ($module_filters= module_invoke($module, 'formfilterapi','filters',$sess)) {
+      $filters +=$module_filters;
+    }
+  }
+  $options=array();
+
+  switch ($op) {
+    case t('Filter'): case t('Refine'):
+        foreach($form_state['values']['status'] as $key => $value){
+          unset($_SESSION[$sess][$key]);
+          
+          if(!isset($_SESSION[$sess]['queue'])){
+            $_SESSION[$sess]['queue']=array();
+          }
+          
+          switch($filters[$key]['#type']){
+            case 'select':
+                if($value != '_default'){
+                  $_SESSION[$sess][$key] = $value;
+                  if(!in_array($key,$_SESSION[$sess]['queue']))
+                    $_SESSION[$sess]['queue'][]=$key;
+                }
+              break;
+            case 'textfield':
+                if(!empty($value)){
+                  $_SESSION[$sess][$key] = $value;
+                  if(!in_array($key,$_SESSION[$sess]['queue']))
+                    $_SESSION[$sess]['queue'][]=$key;
+                }
+              break;
+            default:
+              $_SESSION[$sess][$key] = $value;
+              if(!in_array($key,$_SESSION[$sess]['queue']))
+                $_SESSION[$sess]['queue'][]=$key;
+          }//switch
+        }
+      break;
+    case t('Undo'):
+        $key = array_pop($_SESSION[$sess]['queue']);
+        unset($_SESSION[$sess][$key]);
+      break;
+    case t('Reset'):
+        $_SESSION[$sess] = array();
+      break;
+    case t('Update'):
+      return;
+  }
+}
+
+
+/********************************************************************
+ * Functions theme
+ ********************************************************************/
+
+function theme_formfilterapi_formfilter($form) {
+  drupal_add_css(drupal_get_path('module', 'pg_account') .'/css/pg_account.css');
+  $output = drupal_render($form);
+  
+  return $output;
+}
