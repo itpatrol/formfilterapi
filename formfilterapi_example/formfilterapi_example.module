@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * @file
+ * Form filter API ( Example ).
+ *
+ * Example work module.
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function formfilterapi_example_menu() {
+  $items['formfilterapi_example'] = array(
+    'title' => 'Form filter API',
+    'page callback' => 'formfilterapi_example_page',
+    'access callback' => TRUE,
+  );
+
+  return $items;
+}
+
+/**
+ * Example page.
+ */
+function formfilterapi_example_page() {
+  $name_form = 'formfilterapi_example';
+  $form = formfilterapi_getForm($name_form);
+
+  $filters = formfilterapi_build_filter_query($name_form);
+
+  $sql = 'SELECT * FROM {node} ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY created DESC';
+  $result = db_query($sql, $filters['args']);
+
+  $output_nodes = $form;
+
+  while ($node = db_fetch_object($result)) {
+    $n2 = node_load($node->nid);
+    $output_nodes .= theme('node', $n2, TRUE, FALSE);
+  }
+
+  return $output_nodes;
+}
+
+/**
+ * Implements hook_formfilterapi().
+ */
+function formfilterapi_example_formfilterapi() {
+  $form['title'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Title'),
+    '#where' => "`title` LIKE '%%%s%%'",
+  );
+
+  $form['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type'),
+    '#options' => formfilterapi_example_node_types(),
+    '#where' => "`type` = '%s'",
+  );
+
+  $form['user'] = array(
+    '#type' => 'select',
+    '#title' => t('User'),
+    '#options' => formfilterapi_example_users(),
+    '#where' => "`uid` = %d",
+  );
+
+  return $form;
+}
+
+/**
+ * List node types for select.
+ *
+ * @return array
+ *   Node types.
+ */
+function formfilterapi_example_node_types() {
+  $types = node_get_types();
+  $result = array();
+
+  foreach ($types as $type) {
+    $result[$type->name] = $type->type;
+  }
+
+  return $result;
+}
+
+/**
+ * List users for select.
+ *
+ * @return array
+ *   Users.
+ */
+function formfilterapi_example_users() {
+  $query = 'SELECT uid,name FROM {users} WHERE `uid` != 0 ORDER by uid DESC';
+  $result = db_query($query);
+  $users = array();
+
+  while ($user = db_fetch_object($result)) {
+    $users[$user->uid] = $user->name;
+  }
+
+  return $users;
+}
