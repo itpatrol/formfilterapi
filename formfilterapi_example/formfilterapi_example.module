@@ -25,7 +25,7 @@ function formfilterapi_example_menu() {
  */
 function formfilterapi_example_page() {
   $name_form = 'formfilterapi_example';
-  $form = formfilterapi_getForm($name_form);
+  $form = formfilterapi_get_form($name_form);
 
   $filters = formfilterapi_build_filter_query($name_form);
 
