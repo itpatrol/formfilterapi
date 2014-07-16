@@ -29,15 +29,15 @@ function formfilterapi_example_page() {
 
   $filters = formfilterapi_build_filter_query($name_form);
 
-  $sql = 'SELECT * FROM {node} ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY created DESC';
+  $sql = 'SELECT * FROM {node} ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY created DESC LIMIT 5';
   $result = db_query($sql, $filters['args']);
   $nodes = $result->fetchAll();
 
-  $output_nodes = $form;
+  $output_nodes = drupal_render($form);
 
   foreach ($nodes as $node) {
     $n2 = node_load($node->nid);
-    $output_nodes .= node_view($n2, 'teaser');
+    $output_nodes .= drupal_render(node_view($n2, 'teaser'));
   }
 
   return $output_nodes;
@@ -77,7 +77,7 @@ function formfilterapi_example_formfilterapi() {
  *   Node types.
  */
 function formfilterapi_example_node_types() {
-  $types = node_get_types();
+  $types = node_type_get_types();
   $result = array();
 
   foreach ($types as $type) {
@@ -97,7 +97,8 @@ function formfilterapi_example_users() {
   $users = db_select('users', 'u')
     ->fields('u', array('uid', 'name'))
     ->condition('uid', 0, '!=')
-    ->order_by('uid', 'DESC')
+    ->range(0, 10)
+    ->orderBy('uid', 'DESC')
     ->execute()
     ->fetchAll();
   $result = array();
