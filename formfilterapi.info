@@ -1,3 +1,3 @@
 name = Form filter API
 description = Form filter API provide a nice filtering mechanism for developers. Easy to use. Less development for table results page.
-core = 6.x
+core = 7.x
