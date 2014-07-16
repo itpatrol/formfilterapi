@@ -1,3 +1,4 @@
 name = Form filter API
 description = Form filter API provide a nice filtering mechanism for developers. Easy to use. Less development for table results page.
+package = Development
 core = 7.x
