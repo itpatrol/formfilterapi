@@ -31,12 +31,13 @@ function formfilterapi_example_page() {
 
   $sql = 'SELECT * FROM {node} ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY created DESC';
   $result = db_query($sql, $filters['args']);
+  $nodes = $result->fetchAll();
 
   $output_nodes = $form;
 
-  while ($node = db_fetch_object($result)) {
+  foreach ($nodes as $node) {
     $n2 = node_load($node->nid);
-    $output_nodes .= theme('node', $n2, TRUE, FALSE);
+    $output_nodes .= node_view($n2, 'teaser');
   }
 
   return $output_nodes;
@@ -93,13 +94,17 @@ function formfilterapi_example_node_types() {
  *   Users.
  */
 function formfilterapi_example_users() {
-  $query = 'SELECT uid,name FROM {users} WHERE `uid` != 0 ORDER by uid DESC';
-  $result = db_query($query);
-  $users = array();
+  $users = db_select('users', 'u')
+    ->fields('u', array('uid', 'name'))
+    ->condition('uid', 0, '!=')
+    ->order_by('uid', 'DESC')
+    ->execute()
+    ->fetchAll();
+  $result = array();
 
-  while ($user = db_fetch_object($result)) {
-    $users[$user->uid] = $user->name;
+  foreach ($users as $user) {
+    $result[$user->uid] = $user->name;
   }
 
-  return $users;
+  return $result;
 }
