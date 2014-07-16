@@ -14,7 +14,7 @@
 function formfilterapi_theme() {
   return array(
     'formfilterapi_formfilter' => array(
-      'arguments' => array('form' => NULL),
+      'variables' => array('form' => NULL),
     ),
   );
 };
@@ -101,8 +101,6 @@ function formfilterapi_build_filter_query($session_name) {
  * Implements hook_FORMID().
  */
 function formfilterapi_form($form_state, $session_name) {
-  drupal_add_css(drupal_get_path('module', 'formfilterapi') . '/formfilterapi.css');
-
   $session = $_SESSION[$session_name];
   unset($session['queue']);
   $session = is_array($session) ? $session : array();
@@ -182,6 +180,8 @@ function formfilterapi_form($form_state, $session_name) {
   $form['#attributes'] = array(
     'class' => 'formfilterapiform ' . $session_name,
   );
+
+  $form['#attached']['css'][] = drupal_get_path('module', 'formfilterapi') . '/formfilterapi.css';
 
   return $form;
 }
