@@ -29,7 +29,7 @@ function formfilterapi_example_page() {
 
   $filters = formfilterapi_build_filter_query($name_form);
 
-  $sql = 'SELECT * FROM {node} ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY created DESC LIMIT 5';
+  $sql = 'SELECT n.nid FROM {node} n ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY n.created DESC LIMIT 5';
   $result = db_query($sql, $filters['args']);
   $nodes = $result->fetchAll();
 
@@ -37,7 +37,8 @@ function formfilterapi_example_page() {
 
   foreach ($nodes as $node) {
     $n2 = node_load($node->nid);
-    $output_nodes .= drupal_render(node_view($n2, 'teaser'));
+    $view = node_view($n2, 'teaser');
+    $output_nodes .= drupal_render($view);
   }
 
   return $output_nodes;
@@ -50,21 +51,21 @@ function formfilterapi_example_formfilterapi() {
   $form['title'] = array(
     '#type' => 'textfield',
     '#title' => t('Title'),
-    '#where' => "`title` LIKE '%%%s%%'",
+    '#where' => "n.title = ?",
   );
 
   $form['type'] = array(
     '#type' => 'select',
     '#title' => t('Type'),
     '#options' => formfilterapi_example_node_types(),
-    '#where' => "`type` = '%s'",
+    '#where' => "n.type = ?",
   );
 
-  $form['user'] = array(
+  $form['uid'] = array(
     '#type' => 'select',
     '#title' => t('User'),
     '#options' => formfilterapi_example_users(),
-    '#where' => "`uid` = %d",
+    '#where' => "n.uid = ?",
   );
 
   return $form;
@@ -81,7 +82,7 @@ function formfilterapi_example_node_types() {
   $result = array();
 
   foreach ($types as $type) {
-    $result[$type->name] = $type->type;
+    $result[$type->type] = $type->name;
   }
 
   return $result;

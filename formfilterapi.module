@@ -69,18 +69,28 @@ function formfilterapi_build_filter_query($session_name) {
 
     foreach ($sessvals as $key => $value) {
       if (is_array($value)) {
-        $where[] = $filters[$key]['#where'];
-        $join[] = $filters[$key]['#join'];
+        if (isset($filters[$key]['#where'])) {
+          $where[] = $filters[$key]['#where'];
+        }
+
+        if (isset($filters[$key]['#join'])) {
+          $join[] = $filters[$key]['#join'];
+        }
 
         foreach ($value as $v2) {
           $args[] = $v2;
         }
-
       }
       elseif ($value != '_default') {
-        $where[] = $filters[$key]['#where'];
+        if (isset($filters[$key]['#where'])) {
+          $where[] = $filters[$key]['#where'];
+        }
+
         $args[] = $value;
-        $join[] = $filters[$key]['#join'];
+
+        if (isset($filters[$key]['#join'])) {
+          $join[] = $filters[$key]['#join'];
+        }
       }
     }
   }
@@ -100,7 +110,7 @@ function formfilterapi_build_filter_query($session_name) {
 /**
  * Implements hook_FORMID().
  */
-function formfilterapi_form($form_state, $session_name) {
+function formfilterapi_form($form, $form_state, $session_name) {
   $session = $_SESSION[$session_name];
   unset($session['queue']);
   $session = is_array($session) ? $session : array();
