@@ -47,28 +47,37 @@ function formfilterapi_example_page() {
 /**
  * Implements hook_formfilterapi().
  */
-function formfilterapi_example_formfilterapi() {
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#where' => "n.title = ?",
-  );
+function formfilterapi_example_formfilterapi($execute, $session_name, &$sessvals = array()) {
+  switch ($execute) {
+    case 'pre_query':
+      // For WHERE LIKE.
+      $sessvals['title'] = '%' . $sessvals['title'] . '%';
+      break;
 
-  $form['type'] = array(
-    '#type' => 'select',
-    '#title' => t('Type'),
-    '#options' => formfilterapi_example_node_types(),
-    '#where' => "n.type = ?",
-  );
+    case 'filters':
+      $form['title'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Title'),
+        '#where' => "n.title LIKE ?",
+      );
 
-  $form['uid'] = array(
-    '#type' => 'select',
-    '#title' => t('User'),
-    '#options' => formfilterapi_example_users(),
-    '#where' => "n.uid = ?",
-  );
+      $form['type'] = array(
+        '#type' => 'select',
+        '#title' => t('Type'),
+        '#options' => formfilterapi_example_node_types(),
+        '#where' => "n.type = ?",
+      );
 
-  return $form;
+      $form['uid'] = array(
+        '#type' => 'select',
+        '#title' => t('User'),
+        '#options' => formfilterapi_example_users(),
+        '#where' => "n.uid = ?",
+      );
+
+      return $form;
+      break;
+  }
 }
 
 /**
