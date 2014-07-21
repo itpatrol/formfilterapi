@@ -47,8 +47,8 @@ function formfilterapi_example_page() {
 /**
  * Implements hook_formfilterapi().
  */
-function formfilterapi_example_formfilterapi($execute, $session_name, &$sessvals = array()) {
-  switch ($execute) {
+function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = array()) {
+  switch ($op) {
     case 'pre_query':
       // For WHERE LIKE.
       $sessvals['title'] = '%' . $sessvals['title'] . '%';
