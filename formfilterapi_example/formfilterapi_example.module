@@ -7,6 +7,11 @@
  * Example work module.
  */
 
+/*
+ * Name form with filters.
+ */
+define('FORMFILTERAPI_EXAMPLE_FORM_NAME', 'formfilterapi_example');
+
 /**
  * Implements hook_menu().
  */
@@ -24,10 +29,9 @@ function formfilterapi_example_menu() {
  * Example page.
  */
 function formfilterapi_example_page() {
-  $name_form = 'formfilterapi_example';
-  $form = formfilterapi_get_form($name_form);
+  $form = formfilterapi_get_form(FORMFILTERAPI_EXAMPLE_FORM_NAME);
 
-  $filters = formfilterapi_build_filter_query($name_form);
+  $filters = formfilterapi_build_filter_query(FORMFILTERAPI_EXAMPLE_FORM_NAME);
 
   $sql = 'SELECT n.nid FROM {node} n ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY n.created DESC LIMIT 5';
   $result = db_query($sql, $filters['args']);
@@ -50,34 +54,39 @@ function formfilterapi_example_page() {
 function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = array()) {
   switch ($op) {
     case 'pre_query':
-      // For WHERE LIKE.
-      $sessvals['title'] = '%' . $sessvals['title'] . '%';
+      if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
+        // For WHERE LIKE.
+        $sessvals['title'] = '%' . $sessvals['title'] . '%';
+      }
       break;
 
     case 'filters':
-      $form['title'] = array(
-        '#type' => 'textfield',
-        '#title' => t('Title'),
-        '#where' => "n.title LIKE ?",
-      );
+      if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
+        $form['title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Title'),
+          '#where' => "n.title LIKE ?",
+        );
 
-      $form['type'] = array(
-        '#type' => 'select',
-        '#title' => t('Type'),
-        '#options' => formfilterapi_example_node_types(),
-        '#where' => "n.type = ?",
-      );
+        $form['type'] = array(
+          '#type' => 'select',
+          '#title' => t('Type'),
+          '#options' => formfilterapi_example_node_types(),
+          '#where' => "n.type = ?",
+        );
 
-      $form['uid'] = array(
-        '#type' => 'select',
-        '#title' => t('User'),
-        '#options' => formfilterapi_example_users(),
-        '#where' => "n.uid = ?",
-      );
+        $form['uid'] = array(
+          '#type' => 'select',
+          '#title' => t('User'),
+          '#options' => formfilterapi_example_users(),
+          '#where' => "n.uid = ?",
+        );
 
-      return $form;
+        return $form;
+      }
       break;
   }
+
 }
 
 /**
