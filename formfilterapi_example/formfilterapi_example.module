@@ -49,7 +49,7 @@ function formfilterapi_example_page() {
  * Implements hook_formfilterapi().
  */
 function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = array()) {
-  if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
+  if ($op == 'filters' && $session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
     $form['title'] = array(
       '#type' => 'textfield',
       '#title' => t('Title'),
