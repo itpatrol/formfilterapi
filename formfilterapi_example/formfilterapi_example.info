@@ -1,4 +1,5 @@
 name = Form filter API ( Example )
 description = Example work module.
+dependencies[] = formfilterapi
 configure = formfilterapi_example
 core = 7.x
