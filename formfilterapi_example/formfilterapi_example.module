@@ -86,7 +86,6 @@ function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = ar
       }
       break;
   }
-
 }
 
 /**
