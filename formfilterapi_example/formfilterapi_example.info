@@ -1,4 +1,5 @@
 name = Form filter API ( Example )
 description = Example work module.
+package = Development
 dependencies[] = formfilterapi
 core = 6.x
