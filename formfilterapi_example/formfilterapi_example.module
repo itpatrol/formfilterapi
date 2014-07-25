@@ -19,7 +19,8 @@ function formfilterapi_example_menu() {
   $items['formfilterapi_example'] = array(
     'title' => 'Form filter API',
     'page callback' => 'formfilterapi_example_page',
-    'access callback' => TRUE,
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
