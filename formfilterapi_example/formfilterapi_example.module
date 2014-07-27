@@ -7,6 +7,11 @@
  * Example work module.
  */
 
+/*
+ * Name form with filters.
+ */
+define('FORMFILTERAPI_EXAMPLE_FORM_NAME', 'formfilterapi_example');
+
 /**
  * Implements hook_menu().
  */
@@ -14,7 +19,8 @@ function formfilterapi_example_menu() {
   $items['formfilterapi_example'] = array(
     'title' => 'Form filter API',
     'page callback' => 'formfilterapi_example_page',
-    'access callback' => TRUE,
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
   );
 
   return $items;
@@ -24,19 +30,20 @@ function formfilterapi_example_menu() {
  * Example page.
  */
 function formfilterapi_example_page() {
-  $name_form = 'formfilterapi_example';
-  $form = formfilterapi_get_form($name_form);
+  $form = formfilterapi_get_form(FORMFILTERAPI_EXAMPLE_FORM_NAME);
 
-  $filters = formfilterapi_build_filter_query($name_form);
+  $filters = formfilterapi_build_filter_query(FORMFILTERAPI_EXAMPLE_FORM_NAME);
 
-  $sql = 'SELECT * FROM {node} ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY created DESC';
+  $sql = 'SELECT n.nid FROM {node} n ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY n.created DESC LIMIT 5';
   $result = db_query($sql, $filters['args']);
+  $nodes = $result->fetchAll();
 
-  $output_nodes = $form;
+  $output_nodes = drupal_render($form);
 
-  while ($node = db_fetch_object($result)) {
+  foreach ($nodes as $node) {
     $n2 = node_load($node->nid);
-    $output_nodes .= theme('node', $n2, TRUE, FALSE);
+    $view = node_view($n2, 'teaser');
+    $output_nodes .= drupal_render($view);
   }
 
   return $output_nodes;
@@ -45,28 +52,41 @@ function formfilterapi_example_page() {
 /**
  * Implements hook_formfilterapi().
  */
-function formfilterapi_example_formfilterapi() {
-  $form['title'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Title'),
-    '#where' => "`title` LIKE '%%%s%%'",
-  );
+function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = array()) {
+  switch ($op) {
+    case 'pre_query':
+      if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
+        // For WHERE LIKE.
+        $sessvals['title'] = '%' . $sessvals['title'] . '%';
+      }
+      break;
 
-  $form['type'] = array(
-    '#type' => 'select',
-    '#title' => t('Type'),
-    '#options' => formfilterapi_example_node_types(),
-    '#where' => "`type` = '%s'",
-  );
+    case 'filters':
+      if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
+        $form['title'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Title'),
+          '#where' => "n.title LIKE ?",
+        );
 
-  $form['user'] = array(
-    '#type' => 'select',
-    '#title' => t('User'),
-    '#options' => formfilterapi_example_users(),
-    '#where' => "`uid` = %d",
-  );
+        $form['type'] = array(
+          '#type' => 'select',
+          '#title' => t('Type'),
+          '#options' => formfilterapi_example_node_types(),
+          '#where' => "n.type = ?",
+        );
 
-  return $form;
+        $form['uid'] = array(
+          '#type' => 'select',
+          '#title' => t('User'),
+          '#options' => formfilterapi_example_users(),
+          '#where' => "n.uid = ?",
+        );
+
+        return $form;
+      }
+      break;
+  }
 }
 
 /**
@@ -76,11 +96,11 @@ function formfilterapi_example_formfilterapi() {
  *   Node types.
  */
 function formfilterapi_example_node_types() {
-  $types = node_get_types();
+  $types = node_type_get_types();
   $result = array();
 
   foreach ($types as $type) {
-    $result[$type->name] = $type->type;
+    $result[$type->type] = $type->name;
   }
 
   return $result;
@@ -93,13 +113,18 @@ function formfilterapi_example_node_types() {
  *   Users.
  */
 function formfilterapi_example_users() {
-  $query = 'SELECT uid,name FROM {users} WHERE `uid` != 0 ORDER by uid DESC';
-  $result = db_query($query);
-  $users = array();
+  $users = db_select('users', 'u')
+    ->fields('u', array('uid', 'name'))
+    ->condition('uid', 0, '!=')
+    ->range(0, 10)
+    ->orderBy('uid', 'DESC')
+    ->execute()
+    ->fetchAll();
+  $result = array();
 
-  while ($user = db_fetch_object($result)) {
-    $users[$user->uid] = $user->name;
+  foreach ($users as $user) {
+    $result[$user->uid] = $user->name;
   }
 
-  return $users;
+  return $result;
 }
