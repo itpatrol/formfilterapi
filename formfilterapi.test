@@ -1,1 +1,24 @@
 <?php
+
+/**
+ * @file
+ * Tests for formfilterapi.module.
+ */
+
+/**
+ * Testing the module functions.
+ */
+class FormfilterapiTestCase extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Testing the functional module',
+      'description' => 'Testing the module module-based example.',
+      'group' => 'Formfilterapi',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp(array('formfilterapi', 'formfilterapi_example'));
+  }
+}
