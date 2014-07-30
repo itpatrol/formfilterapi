@@ -19,7 +19,6 @@ function formfilterapi_theme() {
   );
 };
 
-
 /**
  * API Functions.
  */
