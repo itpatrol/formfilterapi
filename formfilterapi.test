@@ -83,4 +83,22 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[@id="node-1"]');
     $this->assertEqual(1, count($filter_result));
   }
+
+  /**
+   * The use of all filters.
+   */
+  public function testFormfilterapiFilters() {
+    $node = $this->drupalCreateNode(array(
+      'uid' => $this->web_user->uid,
+    ));
+
+    $edit = array();
+    $edit['status[title]'] = $node->title;
+    $edit['status[type]'] = 'page';
+    $edit['status[uid]'] = $this->web_user->uid;
+
+    $this->drupalPost('formfilterapi_example', $edit, t('Filter'));
+    $filter_result = $this->xpath('//div[@id="node-1"]');
+    $this->assertEqual(1, count($filter_result));
+  }
 }
