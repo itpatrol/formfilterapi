@@ -56,8 +56,10 @@ function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = ar
   switch ($op) {
     case 'pre_query':
       if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
-        // For WHERE LIKE.
-        $sessvals['title'] = '%' . $sessvals['title'] . '%';
+        if (isset($sessvals['title'])) {
+          // For WHERE LIKE.
+          $sessvals['title'] = '%' . $sessvals['title'] . '%';
+        }
       }
       break;
 
