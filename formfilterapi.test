@@ -10,6 +10,13 @@
  */
 class FormfilterapiTestCase extends DrupalWebTestCase {
 
+  /**
+   * A user with permission the access example page.
+   *
+   * @var object
+   */
+  protected $web_user;
+
   public static function getInfo() {
     return array(
       'name' => 'Testing the functional module',
@@ -20,5 +27,8 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
 
   public function setUp() {
     parent::setUp(array('formfilterapi', 'formfilterapi_example'));
+
+    $this->web_user = $this->drupalCreateUser(array('access content'));
+    $this->drupalLogin($this->web_user);
   }
 }
