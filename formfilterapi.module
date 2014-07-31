@@ -19,6 +19,7 @@ function formfilterapi_theme() {
   );
 };
 
+
 /**
  * API Functions.
  */
@@ -110,7 +111,8 @@ function formfilterapi_build_filter_query($session_name) {
  * Implements hook_FORMID().
  */
 function formfilterapi_form($form, $form_state, $session_name) {
-  $session = $_SESSION[$session_name];
+  $session = isset($_SESSION[$session_name]) ? $_SESSION[$session_name] : array();
+
   unset($session['queue']);
   $session = is_array($session) ? $session : array();
 
@@ -221,12 +223,12 @@ function formfilterapi_form_submit($form, &$form_state) {
 
         switch ($filters[$key]['#type']) {
           case 'select':
-              if ($value != '_default') {
-                $_SESSION[$session_name][$key] = $value;
-                if (!in_array($key, $_SESSION[$session_name]['queue'])) {
-                  $_SESSION[$session_name]['queue'][] = $key;
-                }
+            if ($value != '_default') {
+              $_SESSION[$session_name][$key] = $value;
+              if (!in_array($key, $_SESSION[$session_name]['queue'])) {
+                $_SESSION[$session_name]['queue'][] = $key;
               }
+            }
             break;
 
           case 'textfield':
