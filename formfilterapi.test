@@ -44,4 +44,26 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[@id="node-1"]');
     $this->assertEqual(0, count($filter_result));
   }
+
+  /**
+   * Filter by type of material.
+   */
+  public function testFormfilterapiFilterType() {
+    $edit = array();
+    $edit['status[type]'] = 'page';
+
+    // Create node with type "page".
+    $this->drupalCreateNode();
+    $this->drupalPost('formfilterapi_example', $edit, t('Filter'));
+
+    $filter_result = $this->xpath('//div[@id="node-1"]');
+    $this->assertEqual(1, count($filter_result));
+
+    // Create the second node.
+    $this->drupalCreateNode();
+    $this->drupalPost('formfilterapi_example', $edit, t('Refine'));
+
+    $filter_result = $this->xpath('//div[starts-with(@class, "node ")]');
+    $this->assertEqual(2, count($filter_result));
+  }
 }
