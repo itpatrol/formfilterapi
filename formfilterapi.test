@@ -31,4 +31,17 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $this->web_user = $this->drupalCreateUser(array('access content'));
     $this->drupalLogin($this->web_user);
   }
+
+  /**
+   * Filtering results when there is no node.
+   */
+  public function testFormfilterapiNoResults() {
+    $edit = array();
+    $edit['status[type]'] = 'page';
+
+    $this->drupalPost('formfilterapi_example', $edit, t('Filter'));
+
+    $filter_result = $this->xpath('//div[@id="node-1"]');
+    $this->assertEqual(0, count($filter_result));
+  }
 }
