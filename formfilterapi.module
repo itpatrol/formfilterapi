@@ -61,32 +61,27 @@ function formfilterapi_build_filter_query($session_name) {
   if (isset($_SESSION[$session_name])) {
     $sessvals = $_SESSION[$session_name];
     unset($sessvals['queue']);
-
-    foreach (module_implements('formfilterapi') as $module) {
-      $function = $module . '_formfilterapi';
-      $function('pre_query', $session_name, $sessvals);
-    }
-
+    
     foreach ($sessvals as $key => $value) {
       if (is_array($value)) {
         if (isset($filters[$key]['#where'])) {
-          $where[] = $filters[$key]['#where'];
+          $where[] = array($filters[$key]['#where'] => $value);
         }
 
         if (isset($filters[$key]['#join'])) {
           $join[] = $filters[$key]['#join'];
         }
 
-        foreach ($value as $v2) {
-          $args[] = $v2;
-        }
       }
       elseif ($value != '_default') {
         if (isset($filters[$key]['#where'])) {
-          $where[] = $filters[$key]['#where'];
+          if(is_array($filters[$key]['#where'])){
+            list($key,$field) = each($filters[$key]['#where']);
+            $where[] = array($field => array('op' => $key, 'value' => $value));
+          }else{
+            $where[] = array($filters[$key]['#where'] => $value);
+          }
         }
-
-        $args[] = $value;
 
         if (isset($filters[$key]['#join'])) {
           $join[] = $filters[$key]['#join'];
@@ -95,13 +90,9 @@ function formfilterapi_build_filter_query($session_name) {
     }
   }
 
-  $where = count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-  $join = count($join) ? ' ' . implode(' ', array_unique($join)) : '';
-
   $result = array(
     'where' => $where,
     'join' => $join,
-    'args' => $args,
   );
 
   return $result;
