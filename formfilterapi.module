@@ -1,11 +1,11 @@
 <?php
 
 /**
- * Constants.
- */
-
-/**
- * Drupal Hooks.
+ * @file
+ * Form filter API.
+ *
+ * Form filter API provide a nice filtering mechanism for developers.
+ * Easy to use. Less development for table results page.
  */
 
 /**
@@ -18,11 +18,6 @@ function formfilterapi_theme() {
     ),
   );
 };
-
-
-/**
- * API Functions.
- */
 
 /**
  * Get form filters.
@@ -262,10 +257,6 @@ function formfilterapi_form_submit($form, &$form_state) {
       return;
   }
 }
-
-/**
- * Functions theme.
- */
 
 /**
  * Implements theme_THEME().
