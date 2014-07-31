@@ -66,4 +66,21 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[starts-with(@class, "node ")]');
     $this->assertEqual(2, count($filter_result));
   }
+
+  /**
+   * Type filtering creator node.
+   */
+  public function testFormfilterapiFilterUser() {
+    $edit = array();
+    $edit['status[uid]'] = $this->web_user->uid;
+
+    // Create a node on behalf of the user.
+    $this->drupalCreateNode(array(
+      'uid' => $this->web_user->uid,
+    ));
+
+    $this->drupalPost('formfilterapi_example', $edit, t('Filter'));
+    $filter_result = $this->xpath('//div[@id="node-1"]');
+    $this->assertEqual(1, count($filter_result));
+  }
 }
