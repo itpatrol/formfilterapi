@@ -33,6 +33,10 @@ class FormFilterAPI extends SelectQueryExtender {
               case 'like':
                 $this->condition($field, "%".$value['value']."%", 'LIKE');
                 break;
+              case 'operation':
+                list($operation,$opval) = explode(' ', $value['value']);
+                $this->condition($field, $opval,$operation);
+                break;
             }
           }else{
             $this->condition($field, $value);
