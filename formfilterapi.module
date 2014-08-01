@@ -102,7 +102,11 @@ function formfilterapi_build_filter_query($session_name) {
  * Implements hook_FORMID().
  */
 function formfilterapi_form($form, $form_state, $session_name) {
-  $session = $_SESSION[$session_name];
+  if(isset($_SESSION[$session_name])){
+    $session = $_SESSION[$session_name];
+  }else{
+    $session = array();
+  }
   unset($session['queue']);
   $session = is_array($session) ? $session : array();
 
