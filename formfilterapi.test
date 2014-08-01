@@ -101,20 +101,4 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[@id="node-1"]');
     $this->assertEqual(1, count($filter_result));
   }
-
-  /**
-   * Testing the "pre_query".
-   */
-  public function testFormfilterapiPreQuery() {
-    $node = $this->drupalCreateNode();
-
-    // Verifying LIKE.
-    $title = substr($node->title, 1, strlen($node->title) - 2);
-    $edit = array();
-    $edit['status[title]'] = $title;
-
-    $this->drupalPost('formfilterapi_example', $edit, t('Filter'));
-    $filter_result = $this->xpath('//div[@id="node-1"]');
-    $this->assertEqual(1, count($filter_result));
-  }
 }
