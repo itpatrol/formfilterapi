@@ -32,11 +32,12 @@ function formfilterapi_example_menu() {
 function formfilterapi_example_page() {
   $form = formfilterapi_get_form(FORMFILTERAPI_EXAMPLE_FORM_NAME);
 
-  $filters = formfilterapi_build_filter_query(FORMFILTERAPI_EXAMPLE_FORM_NAME);
-
-  $sql = 'SELECT n.nid FROM {node} n ' . $filters['join'] . ' ' . $filters['where'] . ' ORDER BY n.created DESC LIMIT 5';
-  $result = db_query($sql, $filters['args']);
-  $nodes = $result->fetchAll();
+  $nodes = db_select('node', 'n')->extend('FormFilterAPI')
+    ->fields('n')
+    ->processFilters(FORMFILTERAPI_EXAMPLE_FORM_NAME)
+    ->orderBy('created', 'DESC')
+    ->execute()
+    ->fetchAll();
 
   $output_nodes = drupal_render($form);
 
@@ -54,35 +55,26 @@ function formfilterapi_example_page() {
  */
 function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = array()) {
   switch ($op) {
-    case 'pre_query':
-      if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
-        if (isset($sessvals['title'])) {
-          // For WHERE LIKE.
-          $sessvals['title'] = '%' . $sessvals['title'] . '%';
-        }
-      }
-      break;
-
     case 'filters':
       if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
         $form['title'] = array(
           '#type' => 'textfield',
           '#title' => t('Title'),
-          '#where' => "n.title LIKE ?",
+          '#where' => array('like' => "n.title"),
         );
 
         $form['type'] = array(
           '#type' => 'select',
           '#title' => t('Type'),
           '#options' => formfilterapi_example_node_types(),
-          '#where' => "n.type = ?",
+          '#where' => "n.type",
         );
 
         $form['uid'] = array(
           '#type' => 'select',
           '#title' => t('User'),
           '#options' => formfilterapi_example_users(),
-          '#where' => "n.uid = ?",
+          '#where' => "n.uid",
         );
 
         return $form;

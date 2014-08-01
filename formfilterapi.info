@@ -3,3 +3,4 @@ description = Form filter API provide a nice filtering mechanism for developers.
 package = Development
 core = 7.x
 files[] = formfilterapi.test
+files[] = formfilterapi.extender.inc
