@@ -51,12 +51,12 @@ function formfilterapi_build_filter_query($session_name) {
   }
 
   // Build query.
-  $where = $args = $join = array();
+  $where = $join = array();
 
   if (isset($_SESSION[$session_name])) {
     $sessvals = $_SESSION[$session_name];
     unset($sessvals['queue']);
-    
+
     foreach ($sessvals as $key => $value) {
       if (is_array($value)) {
         if (isset($filters[$key]['#where'])) {
@@ -70,10 +70,11 @@ function formfilterapi_build_filter_query($session_name) {
       }
       elseif ($value != '_default') {
         if (isset($filters[$key]['#where'])) {
-          if(is_array($filters[$key]['#where'])){
-            list($key,$field) = each($filters[$key]['#where']);
+          if (is_array($filters[$key]['#where'])) {
+            list($key, $field) = each($filters[$key]['#where']);
             $where[] = array($field => array('op' => $key, 'value' => $value));
-          }else{
+          }
+          else {
             $where[] = array($filters[$key]['#where'] => $value);
           }
         }
