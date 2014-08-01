@@ -24,18 +24,12 @@ function hook_formfilterapi($op, $session_name, &$sessvals = array()) {
   $example_session_name = 'test';
 
   switch ($op) {
-    case 'pre_query':
-      if ($session_name == $example_session_name) {
-        $sessvals['title'] = '%' . $sessvals['title'] . '%';
-      }
-      break;
-
     case 'filters':
       if ($session_name == $example_session_name) {
         $form['title'] = array(
           '#type' => 'textfield',
           '#title' => t('Title'),
-          '#where' => "n.title LIKE ?",
+          '#where' => array('like' => "n.title"),
         );
 
         return $form;
