@@ -77,6 +77,16 @@ function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = ar
           '#where' => "n.uid",
         );
 
+        $form['status'] = array(
+          '#type' => 'select',
+          '#title' => t('Status'),
+          '#options' => array(
+            '> 0' => t('Published'),
+            '= 0' => t('Unpublished'),
+          ),
+          '#where' => array('operation' => "n.status"),
+        );
+
         return $form;
       }
       break;
