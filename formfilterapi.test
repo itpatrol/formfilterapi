@@ -134,4 +134,33 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[@id="node-1"]');
     $this->assertEqual(1, count($filter_result));
   }
+
+  /**
+   * Testing the join.
+   */
+  public function testFormfilterapiJoin() {
+    $account = $this->drupalCreateUser(array('administer nodes'));
+
+    // Create thee nodes.
+    $this->drupalCreateNode();
+    $this->drupalCreateNode(array(
+      'uid' => $account->uid,
+      'status' => 0,
+    ));
+    $this->drupalCreateNode(array(
+      'uid' => $account->uid,
+      'status' => 1,
+    ));
+
+    $this->drupalPost('formfilterapi_example', array(), t('Filter'));
+    $filter_result = $this->xpath('//div[contains(@class, "node")]');
+    $this->assertEqual(3, count($filter_result));
+
+    $edit = array();
+    $edit['status[uid]'] = $account->uid;
+
+    $this->drupalPost('formfilterapi_example', $edit, t('Filter'));
+    $filter_result = $this->xpath('//div[contains(@class, "node")]');
+    $this->assertEqual(2, count($filter_result));
+  }
 }
