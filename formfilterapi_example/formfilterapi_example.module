@@ -75,6 +75,7 @@ function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = ar
           '#title' => t('User'),
           '#options' => formfilterapi_example_users(),
           '#where' => "n.uid",
+          '#join' => array('left', array('users' => 'u'), array('%alias.uid', '=', 'n.uid'))
         );
 
         $form['status'] = array(
