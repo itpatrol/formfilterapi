@@ -179,7 +179,6 @@ function formfilterapi_form($form, $form_state, $session_name) {
   );
 
   $form['#attached']['css'][] = drupal_get_path('module', 'formfilterapi') . '/formfilterapi.css';
-  $form['#attached']['css'][] = drupal_get_path('module', 'pg_account') . '/css/pg_account.css';
 
   return $form;
 }
