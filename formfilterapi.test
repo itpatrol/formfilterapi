@@ -163,4 +163,15 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[contains(@class, "node")]');
     $this->assertEqual(2, count($filter_result));
   }
+
+  /**
+   * Testing the _alter.
+   */
+  public function testFormfilterapiAlter() {
+    $this->drupalCreateNode();
+
+    $this->drupalPost('formfilterapi_example', array(), t('Filter'));
+    $filter_result = $this->xpath('//select[@name="status[sticky]"]');
+    $this->assertEqual(1, count($filter_result));
+  }
 }
