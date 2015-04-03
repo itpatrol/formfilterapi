@@ -50,8 +50,8 @@ class FormFilterAPI extends SelectQueryExtender {
                 break;
 
               case 'operation':
-                list($operation, $opval) = explode(' ', $value['value']);
-                $this->condition($field, $opval, $operation);
+                list($operation, $operation_value) = explode(' ', $value['value']);
+                $this->condition($field, $operation_value, $operation);
                 break;
             }
           }
