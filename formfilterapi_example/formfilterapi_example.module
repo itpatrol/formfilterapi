@@ -87,6 +87,12 @@ function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = ar
           '#where' => array('operation' => "n.status"),
         );
 
+        $form['promote'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Promoted to front page '),
+          '#where' => array('expression' => '(n.promote = :value)'),
+        );
+
         return $form;
       }
       break;
