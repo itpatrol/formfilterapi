@@ -134,4 +134,28 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[@id="node-1"]');
     $this->assertEqual(1, count($filter_result));
   }
+
+  /**
+   * Testing the "Expression" query.
+   */
+  public function testFormfilterapiExpression() {
+    $this->drupalCreateNode();
+    $this->drupalCreateNode(array(
+      'status' => 1,
+      'promote' => 1,
+    ));
+
+    $this->drupalCreateNode(array(
+      'status' => 1,
+      'promote' => 1,
+    ));
+
+    $edit = array();
+    $edit['status[status]'] = '> 0';
+    $edit['status[promote]'] = 1;
+
+    $this->drupalPost('formfilterapi_example', $edit, t('Filter'));
+    $filter_result = $this->xpath('//div[contains(@class, "node")]');
+    $this->assertEqual(2, count($filter_result));
+  }
 }
