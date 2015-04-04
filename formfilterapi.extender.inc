@@ -43,6 +43,10 @@ class FormFilterAPI extends SelectQueryExtender {
                 list($operation,$opval) = explode(' ', $value['value']);
                 $this->condition($field, $opval, $operation);
                 break;
+
+              case 'expression':
+                $this->where($field, array(':value' => $value['value']));
+                break;
             }
           }
           else {
