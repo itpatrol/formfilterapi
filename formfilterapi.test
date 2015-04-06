@@ -35,7 +35,7 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
   /**
    * Filtering results when there is no node.
    */
-  public function testFormfilterapiNoResults() {
+  public function testNoResults() {
     $edit = array();
     $edit['status[type]'] = 'page';
 
@@ -48,7 +48,7 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
   /**
    * Filter by type of material.
    */
-  public function testFormfilterapiFilterType() {
+  public function testFilterType() {
     $edit = array();
     $edit['status[type]'] = 'page';
 
@@ -70,7 +70,7 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
   /**
    * Type filtering creator node.
    */
-  public function testFormfilterapiFilterUser() {
+  public function testFilterUser() {
     $edit = array();
     $edit['status[uid]'] = $this->web_user->uid;
 
@@ -87,7 +87,7 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
   /**
    * The use of all filters.
    */
-  public function testFormfilterapiFilters() {
+  public function testFilters() {
     $node = $this->drupalCreateNode(array(
       'uid' => $this->web_user->uid,
     ));
@@ -101,11 +101,39 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
     $filter_result = $this->xpath('//div[@id="node-1"]');
     $this->assertEqual(1, count($filter_result));
   }
+}
+
+/**
+ * Testing form filter api queries.
+ */
+class FormfilterapiQueryTestCase extends DrupalWebTestCase {
+
+  /**
+   * A user with permission the access example page.
+   *
+   * @var object
+   */
+  protected $web_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Testing form filter api queries',
+      'description' => 'Testing options for filtering.',
+      'group' => 'Formfilterapi',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp(array('formfilterapi', 'formfilterapi_example'));
+
+    $this->web_user = $this->drupalCreateUser(array('access content'));
+    $this->drupalLogin($this->web_user);
+  }
 
   /**
    * Testing the "LIKE" query.
    */
-  public function testFormfilterapiLikeQuery() {
+  public function testLikeQuery() {
     $node = $this->drupalCreateNode();
 
     // Verifying LIKE.
@@ -121,7 +149,7 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
   /**
    * Testing the "Operation" query.
    */
-  public function testFormfilterapiOperationQuery() {
+  public function testOperationQuery() {
     $this->drupalCreateNode();
     $this->drupalCreateNode(array(
       'status' => 0,
@@ -138,7 +166,7 @@ class FormfilterapiTestCase extends DrupalWebTestCase {
   /**
    * Testing the "Expression" query.
    */
-  public function testFormfilterapiExpression() {
+  public function testExpressionQuery() {
     $this->drupalCreateNode();
     $this->drupalCreateNode(array(
       'status' => 1,
