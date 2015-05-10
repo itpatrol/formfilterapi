@@ -7,9 +7,7 @@
  * Example work module.
  */
 
-/*
- * Name form with filters.
- */
+// Name form with filters.
 define('FORMFILTERAPI_EXAMPLE_FORM_NAME', 'formfilterapi_example');
 
 /**
@@ -28,6 +26,9 @@ function formfilterapi_example_menu() {
 
 /**
  * Example page.
+ *
+ * @return string
+ *   Nodes with form filter.
  */
 function formfilterapi_example_page() {
   $form = formfilterapi_get_form(FORMFILTERAPI_EXAMPLE_FORM_NAME);
@@ -39,22 +40,29 @@ function formfilterapi_example_page() {
     ->execute()
     ->fetchAll();
 
-  $output_nodes = drupal_render($form);
+  $output = drupal_render($form);
 
-  foreach ($nodes as $node) {
-    $n2 = node_load($node->nid);
-    $view = node_view($n2, 'teaser');
-    $output_nodes .= drupal_render($view);
+  if (!empty($nodes)) {
+    foreach ($nodes as $node) {
+      $n2 = node_load($node->nid);
+      $view = node_view($n2, 'teaser');
+      $output .= drupal_render($view);
+    }
+  }
+  else {
+    $output .= t('No content available.');
   }
 
-  return $output_nodes;
+  return $output;
 }
 
 /**
  * Implements hook_formfilterapi().
+ *
+ * Add form fields for node search.
  */
-function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = array()) {
-  switch ($op) {
+function formfilterapi_example_formfilterapi($operation, $session_name) {
+  switch ($operation) {
     case 'filters':
       if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
         $form['title'] = array(
@@ -75,6 +83,7 @@ function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = ar
           '#title' => t('User'),
           '#options' => formfilterapi_example_users(),
           '#where' => "n.uid",
+          '#join' => array('left', array('users' => 'u'), array('%alias.uid', '=', 'n.uid'))
         );
 
         $form['status'] = array(
@@ -90,6 +99,23 @@ function formfilterapi_example_formfilterapi($op, $session_name, &$sessvals = ar
         return $form;
       }
       break;
+  }
+}
+
+/**
+ * Implements hook_formfilterapi_alter().
+ */
+function formfilterapi_example_formfilterapi_alter(&$filters, $session_name, $operation) {
+  if ($session_name == FORMFILTERAPI_EXAMPLE_FORM_NAME) {
+    $filters['sticky'] = array(
+      '#type' => 'select',
+      '#title' => t('Sticky at top of lists'),
+      '#options' => array(
+        '1' => t('Yes'),
+        '0' => t('No'),
+      ),
+      '#where' => 'n.sticky',
+    );
   }
 }
 
