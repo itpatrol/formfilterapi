@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Form filter API.
@@ -7,17 +6,6 @@
  * Form filter API provide a nice filtering mechanism for developers.
  * Easy to use. Less development for table results page.
  */
-
-/**
- * Implements hook_theme().
- */
-function formfilterapi_theme() {
-  return array(
-    'formfilterapi_formfilter' => array(
-      'variables' => array('form' => NULL),
-    ),
-  );
-};
 
 /**
  * Get form filters.
@@ -43,12 +31,15 @@ function formfilterapi_get_form($session_name) {
  */
 function formfilterapi_build_filter_query($session_name) {
   $filters = array();
+  $operation_hook = 'filters';
 
   foreach (module_implements('formfilterapi') as $module) {
-    if ($module_filters = module_invoke($module, 'formfilterapi', 'filters', $session_name)) {
+    if ($module_filters = module_invoke($module, 'formfilterapi', $operation_hook, $session_name)) {
       $filters += $module_filters;
     }
   }
+
+  drupal_alter('formfilterapi', $filters, $session_name, $operation_hook);
 
   // Build query.
   $where = $join = array();
@@ -95,28 +86,33 @@ function formfilterapi_build_filter_query($session_name) {
 }
 
 /**
- * Implements hook_FORMID().
+ * Form constructor for filter api form.
+ *
+ * @param string $session_name
+ *   Name form filter session.
+ *
+ * @see formfilterapi_form_submit()
+ * @see theme_formfilterapi_formfilter()
  */
 function formfilterapi_form($form, $form_state, $session_name) {
   $session = isset($_SESSION[$session_name]) ? $_SESSION[$session_name] : array();
+  $operation_hook = 'filters';
 
   unset($session['queue']);
   $session = is_array($session) ? $session : array();
 
   $filters = array();
   foreach (module_implements('formfilterapi') as $module) {
-    if ($module_filters = module_invoke($module, 'formfilterapi', 'filters', $session_name)) {
+    if ($module_filters = module_invoke($module, 'formfilterapi', $operation_hook, $session_name)) {
       $filters += $module_filters;
     }
   }
 
+  drupal_alter('formfilterapi', $filters, $session_name, $operation_hook);
+
   $form['session_name'] = array(
     '#type' => 'hidden',
     '#value' => $session_name,
-  );
-
-  $form['filters'] = array(
-    '#theme' => 'formfilterapi_formfilter',
   );
 
   foreach ($filters as $type => $filter) {
@@ -176,7 +172,10 @@ function formfilterapi_form($form, $form_state, $session_name) {
   );
 
   $form['#attributes'] = array(
-    'class' => 'formfilterapiform ' . $session_name,
+    'class' => array(
+      'formfilterapi',
+      str_replace('_', '-', $session_name),
+    ),
   );
 
   $form['#attached']['css'][] = drupal_get_path('module', 'formfilterapi') . '/formfilterapi.css';
@@ -185,20 +184,25 @@ function formfilterapi_form($form, $form_state, $session_name) {
 }
 
 /**
- * Implements hook_FORMID_submit().
+ * Form submission handler for formfilterapi_form().
+ *
+ * @see formfilterapi_form()
  */
 function formfilterapi_form_submit($form, &$form_state) {
-  $op = $form_state['values']['op'];
+  $operation = $form_state['values']['op'];
   $session_name = $form_state['values']['session_name'];
+  $operation_hook = 'filters';
 
   $filters = array();
   foreach (module_implements('formfilterapi') as $module) {
-    if ($module_filters = module_invoke($module, 'formfilterapi', 'filters', $session_name)) {
+    if ($module_filters = module_invoke($module, 'formfilterapi', $operation_hook, $session_name)) {
       $filters += $module_filters;
     }
   }
 
-  switch ($op) {
+  drupal_alter('formfilterapi', $filters, $session_name, $operation_hook);
+
+  switch ($operation) {
     case t('Filter'):
     case t('Refine'):
       foreach ($form_state['values']['status'] as $key => $value) {
@@ -248,14 +252,4 @@ function formfilterapi_form_submit($form, &$form_state) {
     case t('Update'):
       return;
   }
-}
-
-/**
- * Implements theme_THEME().
- */
-function theme_formfilterapi_formfilter($form) {
-  drupal_add_css(drupal_get_path('module', 'pg_account') . '/css/pg_account.css');
-  $output = drupal_render($form);
-
-  return $output;
 }
