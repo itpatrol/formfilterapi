@@ -29,6 +29,12 @@ function hook_formfilterapi($operation, $session_name) {
           '#where' => array('like' => 'n.title'),
         );
 
+        $form['promote'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Promoted to front page '),
+          '#where' => array('expression' => '(n.promote = :value)'),
+        );
+
         return $form;
       }
       break;
