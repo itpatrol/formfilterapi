@@ -40,7 +40,7 @@ class FormFilterAPI extends SelectQueryExtender {
                 break;
 
               case 'operation':
-                list($operation,$opval) = explode(' ', $value['value']);
+                list($operation, $opval) = explode(' ', $value['value']);
                 $this->condition($field, $opval, $operation);
                 break;
             }
@@ -54,4 +54,5 @@ class FormFilterAPI extends SelectQueryExtender {
 
     return $this;
   }
+
 }
