@@ -118,7 +118,7 @@ class FormFilterAPI extends SelectQueryExtender {
    *
    * Avaiable type:
    * - leftJoin
-   * - innerJoin
+   * - innerJoin.
    *
    * @return string
    *   Join type.
@@ -191,6 +191,7 @@ class FormFilterAPI extends SelectQueryExtender {
 
     return implode(' ', $condition);
   }
+
 }
 
 /**
