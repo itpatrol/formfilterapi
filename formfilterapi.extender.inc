@@ -118,7 +118,7 @@ class FormFilterAPI extends SelectQueryExtender {
    *
    * Avaiable type:
    * - leftJoin
-   * - innerJoin
+   * - innerJoin.
    *
    * @return string
    *   Join type.
