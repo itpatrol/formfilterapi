@@ -191,6 +191,7 @@ class FormFilterAPI extends SelectQueryExtender {
 
     return implode(' ', $condition);
   }
+
 }
 
 /**
